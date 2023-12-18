@@ -43,11 +43,14 @@ if (isset($_SESSION['id_cliente'])) {
     $clasesGastadas = $fila['r'];
 
     $clasesAbono = 0;
-    $sentencia4 = $conexion->prepare("SELECT ab.cant_clases as r FROM cliente as cl INNER JOIN abono as ab on ab.id_abono = cl.id_abono where cl.id_cliente =:id_cliente  ");
+    $sentencia4 = $conexion->prepare("SELECT ab.cant_clases as r, ab.desc_corta, cl.nombre_cliente FROM cliente as cl INNER JOIN abono as ab on ab.id_abono = cl.id_abono where cl.id_cliente =:id_cliente  ");
     $sentencia4->bindParam(":id_cliente", $id_cliente);
     $sentencia4->execute();
     $fila = $sentencia4->fetch(PDO::FETCH_LAZY);
     $clasesAbono = $fila['r'];
+    $nombreAbono = $fila['desc_corta'];
+    $nombreCliente = $fila['nombre_cliente'];
+
     $clasesRestantes = $clasesAbono - $clasesGastadas;
 }
 
@@ -61,11 +64,15 @@ if (isset($_SESSION['id_cliente'])) {
 <div class="p-5 mb-4 bg-light rounded-3">
     <div class="container-fluid py-5">
         <h1 class="display-5 fw-bold">Bienvenido</h1>
-        <p class="col-md-8 fs-4">Clases registradas ultimos 7 dias: <?php echo $cantClases ?> </p>
-        <p class="col-md-8 fs-4">Clases disponibles : <?php echo $cantClasesHoy ?></p>
-        <p class="col-md-8 fs-4">Cantidad de clientes registrados: <?php echo $cantClientes ?></p>
+
         <?php if (isset($_SESSION['loggeado'])) { ?>
+            <h2> Usuario <?php echo $nombreCliente ?></h2>
             <p class="col-md-8 fs-4">Clases restantes en el mes vigente : <?php echo $clasesRestantes ?></p>
+            <p class="col-md-8 fs-4">Abono en el que se inscribio : <?php echo $nombreAbono ?></p>
+        <?php } else {   ?>
+            <p class="col-md-8 fs-4">Clases registradas ultimos 7 dias: <?php echo $cantClases ?> </p>
+            <p class="col-md-8 fs-4">Clases disponibles : <?php echo $cantClasesHoy ?></p>
+            <p class="col-md-8 fs-4">Cantidad de clientes registrados: <?php echo $cantClientes ?></p>
         <?php }   ?>
         </p>
     </div>

@@ -52,13 +52,13 @@ if ($_POST) {
         }
         function checkFch_hasta($fch_hasta)
         {
-            if (!preg_match("/^([0-2][0-9]|3[0-1])(\/|-)(0[1-9]|1[0-2])\2(\d{4})(\s)([0-1][0-9]|2[0-3])(:)([0-5][0-9])$/", $fch_hasta)) {
+            if (!preg_match("/^([0-2][0-9]|3[0-1])(\/|-)(0[1-9]|1[0-2])\2(\d{4})(T)([0-1][0-9]|2[0-3])(:)([0-5][0-9])$/", $fch_hasta)) {
                 return true;
             }
         }
         function checkFch_desde($fch_desde)
         {
-            if (!preg_match("/^([0-2][0-9]|3[0-1])(\/|-)(0[1-9]|1[0-2])\2(\d{4})(\s)([0-1][0-9]|2[0-3])(:)([0-5][0-9])$/", $fch_desde)) {
+            if (!preg_match("/^([0-2][0-9]|3[0-1])(\/|-)(0[1-9]|1[0-2])\2(\d{4})(T)([0-1][0-9]|2[0-3])(:)([0-5][0-9])$/", $fch_desde)) {
                 return true;
             }
         }
@@ -68,8 +68,8 @@ if ($_POST) {
                 return true;
             }
         }
-        $errorFch_desde = checkFch_desde($fch_desde);
-        $errorFch_hasta = checkFch_hasta($fch_hasta);
+        // $errorFch_desde = checkFch_desde($fch_desde);
+        // $errorFch_hasta = checkFch_hasta($fch_hasta);
         $errorFechas = checkFechas($fch_desde, $fch_hasta);
 
 
