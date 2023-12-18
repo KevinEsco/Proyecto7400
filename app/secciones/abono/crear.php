@@ -101,14 +101,14 @@ if ($_POST) {
 
             <div class="mb-3">
                 <label for="cod_abono" class="form-label bg-dark text-white">Codigo</label>
-                <input type="text" class="form-control bg-dark text-white" name="cod_abono" id="cod_abono" aria-describedby="helpId" placeholder="Codigo" required>
+                <input type="text" class="form-control bg-dark text-white" name="cod_abono" id="cod_abono" aria-describedby="helpId" placeholder="Codigo" maxlength="45" required>
                 <!-- <small id="helpId" class="form-text text-muted">Help text</small> -->
             </div>
 
 
             <div class="mb-3">
                 <label for="desc_corta" class="form-label bg-dark text-white">Descripcion Corta</label>
-                <input type="text" class="form-control bg-dark text-white" name="desc_corta" id="desc_corta" aria-describedby="helpId" placeholder="Descripcion Corta" required>
+                <input type="text" class="form-control bg-dark text-white" name="desc_corta" id="desc_corta" aria-describedby="helpId" placeholder="Descripcion Corta" maxlength="45" required>
                 <!-- <small id="helpId" class="form-text text-muted">Help text</small> -->
             </div>
 
@@ -122,7 +122,7 @@ if ($_POST) {
 
             <div class="mb-3">
                 <label for="cant_clases" class="form-label bg-dark text-white">Cant clases mensuales</label>
-                <input type="number" class="form-control bg-dark text-white" name="cant_clases" id="cant_clases" aria-describedby="helpId" placeholder="Cantidad de clases" required>
+                <input type="number" class="form-control bg-dark text-white" name="cant_clases" id="cant_clases" aria-describedby="helpId" placeholder="Cantidad de clases" required max="2147483647">
                 <!-- <small id="helpId" class="form-text text-muted">Help text</small> -->
             </div>
 

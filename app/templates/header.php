@@ -1,5 +1,5 @@
 <?php
-$url_base = "http://localhost/app/";
+$url_base = "http://localhost/proyecto7400/app/";
 session_start();
 ?>
 <!doctype html>

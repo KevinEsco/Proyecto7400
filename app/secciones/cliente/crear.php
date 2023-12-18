@@ -8,38 +8,95 @@ if ($_POST) {
     if (!empty($_POST)) {
         // Comprobar si llegaron los campos requeridos:
 
-        // Si han habido errores se muestran, sino se mostrán los mensajes
-        if (isset($aErrores)) {
-            if (count($aErrores) > 0) {
-                # code...
-                $mensaje = "ERRORES ENCONTRADOS: " . "\n";
+        $nombre = (isset($_POST["nombre"]) ? $_POST["nombre"] : "");
+        $codigo = (isset($_POST["codigo"]) ? $_POST["codigo"] : "");
+        $email = (isset($_POST["email"]) ? $_POST["email"] : "");
+
+        $telefono = (isset($_POST["telefono"]) ? $_POST["telefono"] : "");
+        $fch_nacimiento = (isset($_POST["fch_nacimiento"]) ? $_POST["fch_nacimiento"] : "");
+        $clave = (isset($_POST["clave"]) ? $_POST["clave"] : "");
+        $DNI = (isset($_POST["DNI"]) ? $_POST["DNI"] : "");
+        $usuario = (isset($_POST["usuario"]) ? $_POST["usuario"] :  $_POST["DNI"]);
+        $id_abono = (isset($_POST["id_abono"]) ? $_POST["id_abono"] : 0);
+
+        //agregar validacion si esta correcto continuar y ejecutar el insert
+        $errorNombre = $errorCodigo = $errorEmail = $errorTelefono = $errorFch_nacimiento = $errorClave = $errorDNI = $errorUsuario = $errorId_abono = false;
 
 
-                // Mostrar los errores:
-                for ($contador = 0; $contador < count($aErrores); $contador++)
-                    $mensaje .= $aErrores[$contador] . "\n";
-                echo $mensaje;
+        function checkNombre($nombre)
+        {
+            if (!preg_match("/^['a-zA-Z-' ]*$/", $nombre)) {
+                return true;
+            } else {
+                return false;
             }
-        } else {
+        }
+        function checkCodigo($codigo)
+        {
+            if (strlen($codigo) == 0 or strlen($codigo) > 25) {
+                return true;
+            }
+        }
+        function checkEmail($email)
+        {
+            if (!preg_match("/^['a-zA-Z-' ]*$/", $email)) {
+                return true;
+            }
+        }
+        function checkTelefono($telefono)
+        {
+            if (!preg_match("/^['a-zA-Z-' ]*$/", $telefono)) {
+                return true;
+            }
+        }
+        function checkFch_nacimiento($fch_nacimiento)
+        {
+            if (!preg_match("/^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/", $fch_nacimiento)) {
+                return true;
+            }
+            $currentDate = new DateTime();
+            $fchIngresada = new DateTime($fch_nacimiento);
 
 
+            if ($fchIngresada > $currentDate) {
+                return true;
+            }
+            $fchMinima = clone $currentDate;
+            // $edadMinima->modify("-{7} years");
+            $fchMinima = date('d-m-Y', strtotime('-7 year'));
+            if ($fchIngresada > $fchMinima) {
+                return true;
+            }
+        }
+        function checkClave($clave)
+        {
+            if (strlen($clave) == 0 or strlen($clave) < 4) {
+                return true;
+            }
+        }
+        function checkDNI($DNI)
+        {
+            if (!preg_match("/^\d{1,2}\.?\d{3}\.?\d{3}$/", $DNI)) {
+                return true;
+            }
+        }
+        $errorNombre = checkNombre($nombre);
+        if (strlen($fch_nacimiento) > 1) {
+            $errorFch_nacimiento = checkFch_nacimiento($fch_nacimiento);
+        }
+        if ($errorNombre) {
+            $mensaje = "<p>El campo nombre no puede contener numeros ni caracteres especiales. Se ingreso " . $nombre . "</p>";
+            echo $mensaje;
+            // echo "<script language='javascript'>alert('El campo nombre no puede contener numeros ni caracteres especiales. Se ingreso:" . $nombre . "');</script>";
+        }
+        if ($errorFch_nacimiento) {
+            $mensaje = "<p>El campo fecha de nacimiento es invalido. La edad minima es de 7 anios. Se ingreso: " . $fch_nacimiento . "</p>";
+            echo $mensaje;
+            // echo "<script language='javascript'>alert('El campo nombre no puede contener numeros ni caracteres especiales. Se ingreso:" . $nombre . "');</script>";
+        }
 
 
-
-
-
-            $nombre = (isset($_POST["nombre"]) ? $_POST["nombre"] : "");
-            $codigo = (isset($_POST["codigo"]) ? $_POST["codigo"] : "");
-            $email = (isset($_POST["email"]) ? $_POST["email"] : "");
-
-            $telefono = (isset($_POST["telefono"]) ? $_POST["telefono"] : "");
-            $fch_nacimiento = (isset($_POST["fch_nacimiento"]) ? $_POST["fch_nacimiento"] : "");
-            $clave = (isset($_POST["clave"]) ? $_POST["clave"] : "");
-            $DNI = (isset($_POST["DNI"]) ? $_POST["DNI"] : "");
-            $usuario = (isset($_POST["usuario"]) ? $_POST["usuario"] :  $_POST["DNI"]);
-            $id_abono = (isset($_POST["id_abono"]) ? $_POST["id_abono"] : 0);
-
-
+        if (!$errorNombre and !$errorCodigo and !$errorEmail and !$errorTelefono and !$errorFch_nacimiento and !$errorClave and !$errorDNI) {
             $sentencia = $conexion->prepare("INSERT INTO cliente(nombre_cliente,cod_cliente,email,id_abono,telefono,fch_nacimiento,clave,DNI,usuario) VALUES(:nombre,:codigo,:email,:id_abono,:telefono,:fch_nacimiento,:clave,:DNI,:usuario)");
 
             $sentencia->bindParam(":nombre", $nombre);
@@ -51,13 +108,20 @@ if ($_POST) {
             $sentencia->bindParam(":clave", $clave);
             $sentencia->bindParam(":DNI", $DNI);
             $sentencia->bindParam(":usuario", $usuario);
-            $sentencia->execute();
-            // // Mostrar los mensajes:
-            // for ($contador = 0; $contador < count($aMensajes); $contador++)
-            //     echo $aMensajes[$contador] . "<br/>";
-            echo "<script language='javascript'>alert('Cliente agregado');</script>";
-            header("Location:index.php");
+            try {
+                $sentencia->execute();
+            } catch (Throwable $th) {
+                if ((str_contains($th->getMessage(), " for key 'DNI'")) and (str_contains($th->getMessage(), "1062"))) {
+                    echo "<script language='javascript'>alert('Ya hay un cliente registrado con el mismo DNI');</script>";
+                }
+            }
         }
+
+        // echo "<script language='javascript'>alert('Cliente agregado');</script>";
+        // header("Location:index.php");
+
+
+
     } else {
         echo "<p>No se ha enviado el formulario.</p>";
     }
@@ -72,13 +136,13 @@ if ($_POST) {
         <form action="" method="post" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="nombre" class="form-label bg-dark text-white">Nombre y apellido</label>
-                <input type="text" class="form-control bg-dark text-white" name="nombre" id="nombre" aria-describedby="helpId" placeholder="Nombre y apellido" required>
+                <input type="text" class="form-control bg-dark text-white" name="nombre" id="nombre" aria-describedby="helpId" placeholder="Nombre y apellido" required maxlength="200">
 
             </div>
             <div class="mb-3">
                 <label for="codigo" class="form-label bg-dark text-white">Codigo</label>
-                <input type="text" class="form-control bg-dark text-white" name="codigo" id="codigo" aria-describedby="helpId" placeholder="Codigo" required>
-                <!-- <small id="helpId" class="form-text text-muted">Help text</small> -->
+                <input type="text" class="form-control bg-dark text-white" name="codigo" id="codigo" aria-describedby="helpId" placeholder="Codigo" required maxlength="10">
+
             </div>
             <div class="mb-3">
                 <label for="email" class="form-label bg-dark text-white">Email</label>
@@ -99,21 +163,20 @@ if ($_POST) {
             <div class="mb-3">
                 <label for="telefono" class="form-label bg-dark text-white">Telefono</label>
                 <input type="number" class="form-control bg-dark text-white" name="telefono" id="telefono" aria-describedby="helpId" placeholder="telefono">
-                <!-- <small id="helpId" class="form-text text-muted">Help text</small> -->
             </div>
             <div class="mb-3">
                 <label for="fch_nacimiento" class="form-label bg-dark text-white">Fecha nacimiento</label>
-                <input type="date" class="form-control bg-dark text-white" name="fch_nacimiento" id="Fecha nacimiento" aria-describedby="helpId" placeholder="Fecha nacimiento">
+                <input type="date" class="form-control bg-dark text-white" name="fch_nacimiento" id="Fecha nacimiento" aria-describedby="helpId" placeholder="Fecha nacimiento" value="01-01-2000">
                 <!-- <small id="helpId" class="form-text text-muted">Help text</small> -->
             </div>
             <div class="mb-3">
                 <label for="DNI" class="form-label bg-dark text-white">DNI</label>
-                <input type="number" class="form-control bg-dark text-white" name="DNI" id="DNI" aria-describedby="helpId" placeholder="DNI" required max="999999999">
+                <input type="number" class="form-control bg-dark text-white" name="DNI" id="DNI" aria-describedby="helpId" placeholder="DNI" required min="1000000" max="999999999">
                 <!-- <small id="helpId" class="form-text text-muted">Help text</small> -->
             </div>
             <div class="mb-3">
                 <label for="clave" class="form-label bg-dark text-white">clave</label>
-                <input type="password" class="form-control bg-dark text-white" name="clave" id="clave" aria-describedby="helpId" placeholder="clave" required>
+                <input type="password" class="form-control bg-dark text-white" name="clave" id="clave" aria-describedby="helpId" placeholder="clave" required minlength="4">
                 <!-- <small id="helpId" class="form-text text-muted">Help text</small> -->
             </div>
 
@@ -123,5 +186,5 @@ if ($_POST) {
             <a name="" id="" class="btn btn-danger" href="index.php" role="button">Cancelar</a>
         </form>
     </div>
-</div> 
+</div>
 <?php include("../../templates/footer.php"); ?>
